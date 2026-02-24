@@ -1,4 +1,5 @@
 #include"stat_render/shapes/Triangle.h"
+#include"stat_render/samplers/sampler.h"
 
 Hit Triangle::intersect(const Ray& ray)
 {
@@ -51,7 +52,7 @@ Hit Triangle::intersect(const Ray& ray)
     payload.position = ray(t);
     payload.incident = -ray.direct;
     payload.material = material;
-    
+    payload.obj = this;
     // 计算几何法线
     Vector3f normal = Cross(e1, e2).normalized();
     
@@ -70,4 +71,17 @@ bool Triangle::hit(const Ray& ray)
     return true;
 }
 
+void Triangle::sample(float xi1, float xi2, Point3f& position, Vector3f& normal, float& pdf) const
+{
 
+    float sqrt_xi1 = std::sqrt(xi1);
+    float b0 = 1.0f - sqrt_xi1;
+    float b1 = xi2 * sqrt_xi1;
+    float b2 = 1.0f - b0 - b1;
+    position = b0 * v0 + b1 * v1 + b2 * v2;
+
+    // 无平滑法线, 直接返回面法线:
+    normal = Cross(v1 - v0, v2 - v0).normalized();
+    pdf = 1.0f / SurfaceArea();
+    return;
+}

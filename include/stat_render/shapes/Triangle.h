@@ -1,6 +1,9 @@
 #pragma once
 
 #include"stat_render/shapes/Object.h"
+#include"stat_render/core/transform.h"
+#include<iostream>
+
 class Triangle : public Object
 {
 private:
@@ -32,12 +35,9 @@ public:
     Triangle(Point3f v0_, Point3f v1_, Point3f v2_, Material* m) 
     : v0(v0_), v1(v1_), v2(v2_), material(m) {
         
-        // 使用 Eigen 内置的系数级(coeff-wise)比较
         Vector3f pmin = v0.cwiseMin(v1).cwiseMin(v2);
         Vector3f pmax = v0.cwiseMax(v1).cwiseMax(v2);
 
-        // 此时调用 Bound 的构造函数
-        // 务必确保 Bound 的构造函数内部执行了“膨胀(Padding)”逻辑
         bound = Bound(pmin, pmax); 
     }
 
@@ -64,8 +64,8 @@ public:
 
     ~Triangle() = default;
 
-    Bound getBound() override {return bound;}
-    Material* getMaterial() override {return material;}
+    Bound getBound() const override {return bound;}
+    Material* getMaterial() const override { return material; }
     
 
     inline void setVertex(const Point3f& _v0, const Point3f& _v1, const Point3f& _v2)
@@ -77,10 +77,31 @@ public:
     Hit intersect(const Ray& ray) override;
     bool hit(const Ray& ray);
 
-    inline float SurfaceArea() override { return 1.0f; }
-    inline Point3f getCenter() override {  
+    inline float SurfaceArea() const override {  
+        Vector3f edge1 = v1 - v0;
+        Vector3f edge2 = v2 - v0;
+        return 0.5f * Cross(edge1, edge2).norm(); }
+
+    inline Point3f getCenter() const override {  
         return (v0 + v1 + v2) * 1./3.; 
     }
 
     Hit getHit(const Ray& ray);
+    
+    void sample(float xi1, float xi2, Point3f& position, Vector3f& normal, float& pdf) const override;
+
+    float getArea();
+    void transform(const Mat4f& M) override
+    {
+        auto v0h = PointTo4D(v0);
+        auto v1h = PointTo4D(v1);
+        auto v2h = PointTo4D(v2);
+        v0 = Point4DTo3D(M * v0h);
+        v1 = Point4DTo3D(M * v1h);
+        v2 = Point4DTo3D(M * v2h);
+        Vector3f pmin = v0.cwiseMin(v1).cwiseMin(v2);
+        Vector3f pmax = v0.cwiseMax(v1).cwiseMax(v2);
+        bound = Bound(pmin, pmax); 
+        
+    }
 };

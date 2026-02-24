@@ -1,5 +1,6 @@
 #pragma once
 #include"stat_render/core/common.h"
+#include"stat_render/core/transform.h"
 #include"Film.h"
 class Camera 
 {
@@ -37,4 +38,11 @@ public:
     Vector3f getTop() const {return top; }
     Vector3f getGaze() const
     { return gaze; }
+    void transform(const Mat4f& M)
+    {
+        pos = Point4DTo3D(M * PointTo4D(pos));
+        gaze = Vector4DTo3D(M * VectorTo4D(gaze)).normalized();
+        top = Vector4DTo3D(M * VectorTo4D(top)).normalized();
+        return;
+    }
 };

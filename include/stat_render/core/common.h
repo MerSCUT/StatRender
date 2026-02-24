@@ -4,8 +4,10 @@
 #include<string>
 
 using Vector3f = Eigen::Vector3f;        // invariant under translation
+using Vector2f = Eigen::Vector2f;
 using Point2f = Eigen::Vector2f;
 using Point3f = Eigen::Vector3f;
+using Mat4f = Eigen::Matrix4f;
 
 using Color3f = Eigen::Array<float, 3, 1>;
 

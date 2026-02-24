@@ -18,7 +18,7 @@ int get_vertex_index(std::string str) {
 }
 
 // 接口增加 bool normalize 参数，默认为 true
-Mesh* Parser::loadOBJ(const std::string& filename, std::shared_ptr<Material> material, bool normalize) {
+Mesh* Parser::loadOBJ(const std::string& filename, std::shared_ptr<Material> material) {
     std::ifstream file(filename);
     if (!file.is_open()) {
         std::cerr << "Error: Could not open file " << filename << std::endl;
@@ -49,15 +49,15 @@ Mesh* Parser::loadOBJ(const std::string& filename, std::shared_ptr<Material> mat
             vertices.emplace_back(x, y, z);
 
             // 如果需要归一化，在读取时顺便记录极值
-            if (normalize) {
-                min_x = std::min(min_x, x);
-                min_y = std::min(min_y, y);
-                min_z = std::min(min_z, z);
+            // if (normalize) {
+            //     min_x = std::min(min_x, x);
+            //     min_y = std::min(min_y, y);
+            //     min_z = std::min(min_z, z);
                 
-                max_x = std::max(max_x, x);
-                max_y = std::max(max_y, y);
-                max_z = std::max(max_z, z);
-            }
+            //     max_x = std::max(max_x, x);
+            //     max_y = std::max(max_y, y);
+            //     max_z = std::max(max_z, z);
+            // }
         } 
         else if (prefix == "f") {
             std::string s1, s2, s3;
@@ -71,31 +71,31 @@ Mesh* Parser::loadOBJ(const std::string& filename, std::shared_ptr<Material> mat
     file.close();
 
     // --- 归一化处理模块 ---
-    if (normalize && !vertices.empty()) {
-        // 计算中心点
-        float center_x = (max_x + min_x) * 0.5f;
-        float center_y = (max_y + min_y) * 0.5f;
-        float center_z = (max_z + min_z) * 0.5f;
+    // if (normalize && !vertices.empty()) {
+    //     // 计算中心点
+    //     float center_x = (max_x + min_x) * 0.5f;
+    //     float center_y = (max_y + min_y) * 0.5f;
+    //     float center_z = (max_z + min_z) * 0.5f;
 
-        // 计算最大跨度，用于等比例缩放 (Uniform Scaling)
-        float extent_x = max_x - min_x;
-        float extent_y = max_y - min_y;
-        float extent_z = max_z - min_z;
-        float max_extent = std::max({extent_x, extent_y, extent_z});
+    //     // 计算最大跨度，用于等比例缩放 (Uniform Scaling)
+    //     float extent_x = max_x - min_x;
+    //     float extent_y = max_y - min_y;
+    //     float extent_z = max_z - min_z;
+    //     float max_extent = std::max({extent_x, extent_y, extent_z});
 
-        if (max_extent > 0.0f) {
-            // 缩放系数：将最大跨度映射到 2.0 (即 [-1, 1] 区间的长度)
-            float scale = 2.0f / max_extent;
+    //     if (max_extent > 0.0f) {
+    //         // 缩放系数：将最大跨度映射到 2.0 (即 [-1, 1] 区间的长度)
+    //         float scale = 2.0f / max_extent;
 
-            for (auto& v : vertices) {
-                // 假设 Vector3f 可以直接访问 .x, .y, .z
-                v.x() = (v.x() - center_x) * scale;
-                v.y() = (v.y() - center_y) * scale;
-                v.z() = (v.z() - center_z) * scale;
-            }
-            std::cout << "Normalized mesh to [-1, 1]^3 with scale factor: " << scale << std::endl;
-        }
-    }
+    //         for (auto& v : vertices) {
+    //             // 假设 Vector3f 可以直接访问 .x, .y, .z
+    //             v.x() = (v.x() - center_x) * scale;
+    //             v.y() = (v.y() - center_y) * scale;
+    //             v.z() = (v.z() - center_z) * scale;
+    //         }
+    //         std::cout << "Normalized mesh to [-1, 1]^3 with scale factor: " << scale << std::endl;
+    //     }
+    // }
     // ----------------------
 
     std::cout << "Loaded Mesh: " << filename 
@@ -104,3 +104,4 @@ Mesh* Parser::loadOBJ(const std::string& filename, std::shared_ptr<Material> mat
     
     return new Mesh(vertices, indices, material.get());
 }
+

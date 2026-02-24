@@ -1,13 +1,21 @@
 #pragma once
 
 #include"stat_render/core/common.h"
-
+#include<random>
 // 随机数序列生成
 class Sampler{
 private:
+    
+    std::mt19937 rng;
+    std::uniform_real_distribution<> dist;
+
 
 public:
+    Sampler() : rng(42), dist(0.0f, 1.0f) {}
+
     ~Sampler() = default;
     
-
+    // 均匀采样
+    float get1D() { return dist(rng); }
+    Vector2f get2D() { return Vector2f(dist(rng), dist(rng)); }
 };

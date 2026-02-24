@@ -3,7 +3,7 @@
 #include"stat_render/core/common.h"
 #include"stat_render/core/Ray.h"
 #include<limits>
-
+#include<iostream>
 class Bound{
 private:
     Point3f Pmin, Pmax;
@@ -24,7 +24,7 @@ public:
     // 包围盒合并函数
     void Union(const Bound& other);
 
-    Point3f Center() const {return (Pmin + Pmax) / 2.f; }
+    Point3f Center() const { return (Pmin + Pmax) * 0.5f; }
 
     Point3f getPmin() const {return Pmin; }
     Point3f getPmax() const {return Pmax; }
@@ -51,5 +51,19 @@ public:
 
     bool intersect(const Ray& ray);
 
-    
+    Mat4f getNormalizeMatrix()
+    {
+        Mat4f M;
+        // 不变型
+        auto center = Center();
+        auto max_extent = MaxExtent();
+        float scale = (max_extent > 1e-8f) ? (2.0f / max_extent) : 1.0f;
+        // 先平移
+        std::cout << "Scale with " << max_extent << std::endl;
+        M << scale, 0.0f,  0.0f,  -scale * center.x(),
+            0.0f,  scale, 0.0f,  -scale * center.y(),
+            0.0f,  0.0f,  scale, -scale * center.z(),
+            0.0f,  0.0f,  0.0f,  1.0f;
+        return M;
+    }
 };

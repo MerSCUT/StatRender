@@ -18,8 +18,10 @@ Mesh::Mesh(const std::vector<Vector3f>& vertices,
     }
     
     this->bound = b;
-    this->bvh = new BVH(triangles); 
+    
 }
+
+
 
 // Without BVH acceleration
 Hit Mesh::intersectWithoutBVH(const Ray& ray)
@@ -46,4 +48,26 @@ Mesh::~Mesh()
     {
         delete obj;
     }
+}
+
+void Mesh::sample(float xi1, float xi2, Point3f& position, Vector3f& normal, float& pdf) const
+{
+    float sum_S = 0.0f;
+    for(auto& tri: triangles)
+    {
+        sum_S += tri->SurfaceArea();
+    }
+    Sampler sampler; 
+    float u = sampler.get1D();
+    float sum = 0.0f;
+    for(auto& tri: triangles)
+    {
+        sum += tri->SurfaceArea();
+        if (sum > u) 
+        {
+            tri->sample(xi1, xi2, position, normal, pdf);
+            pdf = 1.0f / sum_S;
+        }
+    }
+    return;
 }

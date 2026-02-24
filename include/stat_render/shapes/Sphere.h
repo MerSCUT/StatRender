@@ -14,11 +14,11 @@ public:
     ~Sphere() = default;
 
 
-    Bound getBound() override {return bound;}
-    Material* getMaterial() override {return material;}
+    Bound getBound() const override {return bound;}
+    Material* getMaterial() const override {return material;}
     float getSurfaceArea();
     bool hit(const Ray & ray);     
     Hit intersect(const Ray& ray) override;
-    inline float SurfaceArea() override { return 4.f * Pi * radius * radius; }
-    inline Point3f getCenter() override { return center; }
+    inline float SurfaceArea() const override { return 4.f * Pi * radius * radius; }
+    inline Point3f getCenter() const override { return center; }
 };

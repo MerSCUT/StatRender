@@ -5,18 +5,25 @@
 class Emissive : public Material
 {
 private:
-    Vector3f emission;          // 基础发光强度
+    Color3f emission;          // 基础发光强度
     Texture* map;               // 纹理
 public:
-    Emissive() : 
-    Material(MaterialType::Emissive), 
+    Emissive() :  
     map(nullptr),
-    emission(Vector3f(0.,0.,0.)) {}
+    emission(Color3f(255.,255.,255.)) {}
     
-    Emissive(const Vector3f& emission_) : 
-    Material(MaterialType::Emissive),
+    Emissive(const Color3f& emission_) : 
     map(nullptr), 
     emission(emission_) {}
 
-    Vector3f getEmission() const { return emission; }
+
+    bool isEmissive() const override { return true; }
+
+    Color3f getEmission() const override { return emission; }
+
+    Vector3f sample(const Vector3f& wi, const Vector3f& n) override { return Vector3f(0.f, 0.f, 0.f); };
+
+    float pdf(const Vector3f & wi, const Vector3f & wo, const Vector3f& n) override { return 0.0f; }
+    
+    Color3f eval(const Vector3f & wi, const Vector3f& wo, const Vector3f & n) override {return Color3f(0.0f, 0.f, 0.f); }
 };

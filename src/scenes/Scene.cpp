@@ -13,3 +13,4 @@ Hit Scene::intersect(const Ray& ray) const
     }
     return payload;
 }
+
