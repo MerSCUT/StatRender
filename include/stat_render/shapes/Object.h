@@ -22,7 +22,7 @@ public:
     virtual float SurfaceArea() const = 0;
     virtual Point3f getCenter() const = 0;
 
-    virtual void sample(float xi1, float xi2, Point3f& position, Vector3f& normal, float& pdf) const { return; }
+    virtual void sample(float xi1, float xi2, Point3f& position, Vec3f& normal, float& pdf) const { return; }
 
     virtual void transform(const Mat4f& Matrix) { return; }
 };

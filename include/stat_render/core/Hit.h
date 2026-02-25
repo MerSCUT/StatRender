@@ -9,8 +9,8 @@ struct Hit
 {
     bool intersected;
     Point3f position;
-    Vector3f incident;      // outwards
-    Vector3f normal;
+    Vec3f incident;      // outwards
+    Vec3f normal;
     Material* material;
     float tmin;
     Object* obj;
@@ -18,8 +18,8 @@ struct Hit
     Hit() : 
     intersected(false), 
     position(Point3f(0.,0.,0.)), 
-    incident(Vector3f(0.,0.,0.)), 
-    normal(Vector3f(0.,0.,0.)), 
+    incident(Vec3f(0.,0.,0.)), 
+    normal(Vec3f(0.,0.,0.)), 
     material(nullptr), 
     tmin(std::numeric_limits<float>::max()) {}
 

@@ -5,8 +5,14 @@
 #include<mutex>
 #include<atomic>
 const int tile_size = 32;        // Tile size
-void Renderer::RenderMultiThreading(const Scene& scene, Film& film)
+void Renderer::RenderMultiThreading(const Scene& scene, Film& film, const Camera& camera)
 {
+    float dis = 1.0f;
+    float t = dis * std::tan(deg2rad(camera.getFov() * 0.5f));
+    float r = t * camera.getAspect(); 
+    float l = -r;
+    float b = -t;
+
     int spp = SPP;      // from common.h
     int progress = 0;
     int w = film.getWidth();
@@ -53,18 +59,18 @@ void Renderer::RenderMultiThreading(const Scene& scene, Film& film)
                     float u = l + (float)(i+0.5f)/(float)(film.getWidth()) * (r-l);
                     float v = -b - (float)(j+0.5f)/(float)(film.getHeight()) * (t-b);
                     // Ray generation in Camera Standard Space
-                    Vector3f dir = Vector3f(u, v, -1);
+                    Vec3f dir = Vec3f(u, v, -1);
                     // Transform to world space;
                     auto M = CameraToWorldTransform(camera.getPosition(), camera.getGaze(), camera.getTop());
-                    Vector4f ret = M * VectorTo4D(dir);
-                    dir = Vector3f(ret.x(), ret.y(), ret.z()).normalized();
+                    Vec4f ret = M * toVec4D(dir);
+                    dir = Vec3f(ret.x, ret.y, ret.z).normalized();
                     Ray ray(Point3f(camera.getPosition()), dir);
                     // Start rendering
-                    Color3f result = Color3f(0.0f,0.0f,0.0f);
+                    Color3f result(0.f);
                     for(int s = 0; s < spp; s++)
                     {
-                        auto res = CastRay(ray, scene, 0);
-                        result += res/(float)spp;
+                        Color3f res = CastRay(ray, scene, 0)/spp;
+                        result += res;
                     }
                     film.add(i,j, result);
                     localProgress++;
@@ -100,8 +106,14 @@ void Renderer::RenderMultiThreading(const Scene& scene, Film& film)
     return;
 }
 
-void Renderer::RenderPipeline(const Scene& scene, Film& film)
+void Renderer::RenderPipeline(const Scene& scene, Film& film, const Camera& camera)
 {
+    float dis = 1.0f;
+    float t = dis * std::tan(deg2rad(camera.getFov() * 0.5f));
+    float r = t * camera.getAspect(); 
+    float l = -r;
+    float b = -t;
+
     int spp = SPP;          // from common.h
     int progress = 0;
     for(int j = 0; j < film.getHeight(); j++)
@@ -112,10 +124,10 @@ void Renderer::RenderPipeline(const Scene& scene, Film& film)
             float u = l + (float)(i+0.5f)/(float)(film.getWidth()) * (r-l);
             float v = -b - (float)(j+0.5f)/(float)(film.getHeight()) * (t-b);
             // Ray generation
-            Vector3f dir = Vector3f(u, v, -1);
+            Vec3f dir = Vec3f(u, v, -1);
             auto M = CameraToWorldTransform(camera.getPosition(), camera.getGaze(), camera.getTop());
-            Vector4f ret = M * VectorTo4D(dir);
-            dir = Vector3f(ret.x(), ret.y(), ret.z()).normalized();
+            Vec4f ret = M * toVec4D(dir);
+            dir = Vec3f(ret.x, ret.y, ret.z).normalized();
             Ray ray(Point3f(camera.getPosition()), dir);
 
             for(int s = 0; s < spp; s++)
@@ -161,7 +173,7 @@ Color3f Renderer::CastRay(const Ray& ray, const Scene& scene, int depth)
             LightSample ls = scene.sampleLight();
             auto p = payload.position;
             auto l = ls.position;
-            Vector3f wi = (l - p).normalized();    // outwards
+            Vec3f wi = (l - p).normalized();    // outwards
             auto n_p = payload.normal;
             auto n_l = ls.normal;
             // 相交测试
@@ -173,20 +185,20 @@ Color3f Renderer::CastRay(const Ray& ray, const Scene& scene, int depth)
             if ((test(hit_test.tmin) - p).norm() + Epsilon >= (l-p).norm()) 
             {
                 
-                Vector3f wo = payload.incident.normalized();
+                Vec3f wo = payload.incident.normalized();
                 
 
                 // 根据 payload.material 计算 L_o
-                // L_o = fr * L_i * Dot(n, wi) * Dot(-n_l, wi) / Dot(p-l, p-l) / ls.pdf_A
+                // L_o = fr * L_i * dot(n, wi) * dot(-n_l, wi) / dot(p-l, p-l) / ls.pdf_A
                 auto fr = payload.material->eval(wi, wo, n_p);
                 auto Li = ls.radiance;
-                auto cos_thetai = Dot(n_p, wi);
+                auto cos_thetai = dot(n_p, wi);
                 cos_thetai = cos_thetai > 0.0f ? cos_thetai : 0.0f;
-                auto cos_thetaip = std::abs(Dot(n_l, wi));
+                auto cos_thetaip = std::abs(dot(n_l, wi));
                 
 
                 //assert(cos_thetaip >= 0.f);
-                auto dis = Dot(p-l, p-l);
+                auto dis = dot(p-l, p-l);
                 //assert(cos_thetai >= 0.0f);
                 //assert(cos_thetaip >= 0.0f);
                 L_dir = fr * Li * cos_thetai * cos_thetaip / (dis * ls.pdf) ;
@@ -198,21 +210,21 @@ Color3f Renderer::CastRay(const Ray& ray, const Scene& scene, int depth)
             Sampler sampler;
             auto u = sampler.get1D(); 
             if (u >= p_rr) return L_dir;
-            Vector3f wo = (ray.origin - p).normalized();
+            Vec3f wo = (ray.origin - p).normalized();
             // 采样入射方向 wi (局部)
-            Vector3f wi_ind = payload.material->sample(wo, n_p).normalized();
+            Vec3f wi_ind = payload.material->sample(wo, n_p).normalized();
             float pdf_ind = payload.material->pdf(wi_ind, wo, n_p);
             pdf_ind = std::max(pdf_ind, 1e-3f);
 
             Ray ray_ind(p + Epsilon * n_p, wi_ind);
             {
                 auto fr = payload.material->eval(wi_ind, wo, n_p);
-                auto costhetai = Dot(n_p, wi_ind);
+                auto costhetai = dot(n_p, wi_ind);
                 auto Li = CastRay(ray_ind, scene, depth+1);
                 L_indir = fr * Li * costhetai / (pdf_ind * p_rr);
                 
-                if (L_indir.x() >= 1.f || L_indir.y() >= 1.f
-                || L_indir.z() >= 1.f )
+                if (L_indir.x >= 1.f || L_indir.y >= 1.f
+                || L_indir.z >= 1.f )
                 {
                     int breakpoint1 = 10;
                     int breakpoint = 10;
@@ -231,9 +243,9 @@ Color3f Renderer::CastRay(const Ray& ray, const Scene& scene, int depth)
             auto n = payload.normal;
             // [-1,1] -> [0,1]
             
-            float R = n.x() * 0.5f + 0.5f;
-            float G = n.y() * 0.5f + 0.5f;
-            float B = n.z() * 0.5f + 0.5f;
+            float R = n.x * 0.5f + 0.5f;
+            float G = n.y * 0.5f + 0.5f;
+            float B = n.z * 0.5f + 0.5f;
             
             return Color3f(255. * R, 255. * G,255. * B);
 

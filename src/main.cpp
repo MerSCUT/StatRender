@@ -8,57 +8,57 @@
 #include"stat_render/shapes/Triangle.h"
 #include"stat_render/renderers/Renderer.h"
 #include<ctime>
-void test_outputImage()
-{
-    Film film(32,32);
-    //film.OutputImage();
-    return;
-}
-void test_triangle()
-{
-    Triangle tri;//(Point3f(-0.5f, -0.5f, -4.0), Point3f(0.5f, -0.5f, -8.0f), Point3f(0.0f, 0.5f , -4.0f));
-    Film film;
-    // default set
-    Camera camera(film);
-    Scene scene;
-    Object* obj = &tri;
-    scene.AddObject(obj);
+// void test_outputImage()
+// {
+//     Film film(32,32);
+//     //film.OutputImage();
+//     return;
+// }
+// void test_triangle()
+// {
+//     Triangle tri;//(Point3f(-0.5f, -0.5f, -4.0), Point3f(0.5f, -0.5f, -8.0f), Point3f(0.0f, 0.5f , -4.0f));
+//     Film film;
+//     // default set
+//     Camera camera(film);
+//     Scene scene;
+//     Object* obj = &tri;
+//     scene.AddObject(obj);
     
     
-    auto p = camera.getPosition();
-    auto fov = camera.getFov();
-    auto asp = camera.getAspect();
-    float l,r,t,b;
-    float dis = 1.0f;
+//     auto p = camera.getPosition();
+//     auto fov = camera.getFov();
+//     auto asp = camera.getAspect();
+//     float l,r,t,b;
+//     float dis = 1.0f;
 
-    // Ray generation
-    t = dis * std::tan(deg2rad(fov * 0.5f));
-    r = t * asp; 
-    l = -r;
-    b = -t;
-    // Integrator
-    for(int j = 0; j < film.getHeight(); j++)
-    {
-        for(int i = 0; i < film.getWidth(); i++)
-        {
-            // center of pixels
-            float u = l + (float)(i+0.5)/(float)(film.getWidth()) * (r-l);
-            float v = b + (float)(j+0.5)/(float)(film.getHeight()) * (t-b);
-            v = -v;
-            // Ray generation
-            Ray ray(Point3f(p), Vector3f(u, v, -1));
+//     // Ray generation
+//     t = dis * std::tan(deg2rad(fov * 0.5f));
+//     r = t * asp; 
+//     l = -r;
+//     b = -t;
+//     // Integrator
+//     for(int j = 0; j < film.getHeight(); j++)
+//     {
+//         for(int i = 0; i < film.getWidth(); i++)
+//         {
+//             // center of pixels
+//             float u = l + (float)(i+0.5)/(float)(film.getWidth()) * (r-l);
+//             float v = b + (float)(j+0.5)/(float)(film.getHeight()) * (t-b);
+//             v = -v;
+//             // Ray generation
+//             Ray ray(Point3f(p), Vec3f(u, v, -1));
             
-            if (Hit payload = tri.intersect(ray); payload.intersected){
+//             if (Hit payload = tri.intersect(ray); payload.intersected){
                 
-                film.set(i, j, Color3f(255., 0.,0.));
-            }
-            else{
-                film.set(i,j, Color3f(0., 0., 255.));
-            }
-        }
-    }
-    film.Write("../images/test_triangle.ppm");
-}
+//                 film.set(i, j, Color3f(255., 0.,0.));
+//             }
+//             else{
+//                 film.set(i,j, Color3f(0., 0., 255.));
+//             }
+//         }
+//     }
+//     film.Write("../images/test_triangle.ppm");
+// }
 // void test_sphere()
 // {
 //     Sphere sph( Point3f(0.f, 0.f, -2.f), 0.5f);
@@ -91,7 +91,7 @@ void test_triangle()
 //             float v = b + (float)(j+0.5)/(float)(film.getHeight()) * (t-b);
 //             v = -v;
 //             // Ray generation
-//             Ray ray(Point3f(p), Vector3f(u, v, -1));
+//             Ray ray(Point3f(p), Vec3f(u, v, -1));
 
 //             if (Hit payload = sph.intersect(ray); payload.intersected){
 //                 film.set(i, j, Color3f(255., 0.,0.));
@@ -116,10 +116,10 @@ void test_triangle()
 //     Film film(64,64);
 //     Point3f position(-0.016826f, 0.110153f, 0.4f);
 //     // 视线右侧方向向量 (X轴正向)
-//     Vector3f right(1.0f, 0.0f, 0.0f);
+//     Vec3f right(1.0f, 0.0f, 0.0f);
 
 //     // 视线顶上的方向 (Y轴正向)
-//     Vector3f up(0.0f, 1.0f, 0.0f);
+//     Vec3f up(0.0f, 1.0f, 0.0f);
 //     Camera camera(position, right, up, film);
 //     Renderer renderer(scene, film, camera);
 //     renderer.RenderPipeline(scene, film);
@@ -140,10 +140,10 @@ void test_triangle()
 //     Film film(512,512);
 //     Point3f position(0.f, 0.f, 3.0f);
 //     // 视线方向
-//     Vector3f gaze(0.0f, -1.0f, -1.0f);
+//     Vec3f gaze(0.0f, -1.0f, -1.0f);
 
 //     // 视线顶上的方向 (Y轴正向)
-//     Vector3f up(0.0f, 1.0f, 0.0f);
+//     Vec3f up(0.0f, 1.0f, 0.0f);
 //     Camera camera(position, gaze, up, film);
 //     Renderer renderer(scene, film, camera, Mode::NormalMap);
 //     renderer.RenderPipeline(scene, film);
@@ -157,11 +157,11 @@ void test_triangle()
 void test_trace()
 {
     Film film(resolution, resolution);
-    Camera camera(
-        Point3f(278.f,274.f,-600.f),
-        Vector3f(0.f,0.f,1.f),
-        Vector3f(0.f,1.f, 0.f),
-        film, 45);
+    // Camera camera(
+    //     Point3f(278.f,274.f,-600.f),
+    //     Vec3f(0.f,0.f,1.f),
+    //     Vec3f(0.f,1.f, 0.f),
+    //     film, 45);
     Scene scene;
     std::vector<std::string> paths;
     paths.push_back("../asset/cornellbox/floor.obj");
@@ -191,20 +191,19 @@ void test_trace()
     double import_time = double(end_import - start_import) / CLOCKS_PER_SEC;
     std::cout << "[Timer] 导入耗时: " << import_time << " 秒\n" << std::endl;
 
-    camera.transform(scene.getNormalizeMatrix());
-    camera = Camera(
+    // camera.transform(scene.getNormalizeMatrix());
+    Camera camera(
         Point3f(0.f, 0.f, -3.5f),
-        Vector3f(0.f, 0.f, 1.f),
-        Vector3f(0.f, 1.f, 0.f),
+        Vec3f(0.f, 0.f, 1.f),
+        Vec3f(0.f, 1.f, 0.f),
         film, 45
     );
-    Renderer r(scene, film, camera);
-
+    Renderer r;
 
     std::cout << "[Info] 开始执行渲染管线..." << std::endl;
     clock_t start_render = clock();
     //====================================================
-    r.RenderMultiThreading(scene, film);
+    r.RenderMultiThreading(scene, film, camera);
     //====================================================
     clock_t end_render = clock();
     double render_time = double(end_render - start_render) / CLOCKS_PER_SEC;

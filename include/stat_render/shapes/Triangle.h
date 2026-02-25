@@ -8,7 +8,7 @@ class Triangle : public Object
 {
 private:
     Point3f v0, v1, v2;
-    Vector3f n0, n1, n2;   //vertices normal
+    Vec3f n0, n1, n2;   //vertices normal
     Point2f uv0, uv1, uv2;
     Bound bound;
     Material* material;
@@ -23,20 +23,17 @@ public:
     uv2(uv0),
     bound(Bound()), 
     material(nullptr) {
-        Vector3f pmin = (v0.array() < v1.array()).select(v0, v1);
-        pmin = (pmin.array() < v2.array()).select(pmin,v2);
+        Vec3f pmin = v0.cwiseMin(v1).cwiseMin(v2);
+        Vec3f pmax = v0.cwiseMax(v1).cwiseMax(v2);
 
-        Vector3f pmax = (v0.array() > v1.array()).select(v0,v1);
-        pmax = (pmax.array() > pmax.array()).select(pmax,v2);
-
-        bound = Bound(pmin, pmax);
+        bound = Bound(pmin, pmax); 
     }
 
     Triangle(Point3f v0_, Point3f v1_, Point3f v2_, Material* m) 
     : v0(v0_), v1(v1_), v2(v2_), material(m) {
         
-        Vector3f pmin = v0.cwiseMin(v1).cwiseMin(v2);
-        Vector3f pmax = v0.cwiseMax(v1).cwiseMax(v2);
+        Vec3f pmin = v0.cwiseMin(v1).cwiseMin(v2);
+        Vec3f pmax = v0.cwiseMax(v1).cwiseMax(v2);
 
         bound = Bound(pmin, pmax); 
     }
@@ -44,22 +41,16 @@ public:
     
 
     Triangle(Point3f v0_, Point3f v1_, Point3f v2_,
-    Vector3f n0_, Vector3f n1_, Vector3f n2_,
+    Vec3f n0_, Vec3f n1_, Vec3f n2_,
     Point2f uv0_, Point2f uv1_, Point2f uv2_, Material* m) :
     v0(v0_), v1(v1_), v2(v2_), 
     n0(n0_), n1(n1_), n2(n2_),
     uv0(uv0_), uv1(uv1_), uv2(uv2_),
     material(m) {
-        // 用顶点进行 bound 初始化
+        Vec3f pmin = v0.cwiseMin(v1).cwiseMin(v2);
+        Vec3f pmax = v0.cwiseMax(v1).cwiseMax(v2);
 
-        // Eigen::Vector3f 没有逐元素运算, 需要转为 array
-        Vector3f pmin = (v0.array() < v1.array()).select(v0, v1);
-        pmin = (pmin.array() < v2.array()).select(pmin,v2);
-
-        Vector3f pmax = (v0.array() > v1.array()).select(v0,v1);
-        pmax = (pmax.array() > pmax.array()).select(pmax,v2);
-
-        bound = Bound(pmin, pmax);
+        bound = Bound(pmin, pmax); 
     }
 
     ~Triangle() = default;
@@ -78,9 +69,9 @@ public:
     bool hit(const Ray& ray);
 
     inline float SurfaceArea() const override {  
-        Vector3f edge1 = v1 - v0;
-        Vector3f edge2 = v2 - v0;
-        return 0.5f * Cross(edge1, edge2).norm(); }
+        Vec3f edge1 = v1 - v0;
+        Vec3f edge2 = v2 - v0;
+        return 0.5f * cross(edge1, edge2).norm(); }
 
     inline Point3f getCenter() const override {  
         return (v0 + v1 + v2) * 1./3.; 
@@ -88,20 +79,9 @@ public:
 
     Hit getHit(const Ray& ray);
     
-    void sample(float xi1, float xi2, Point3f& position, Vector3f& normal, float& pdf) const override;
+    void sample(float xi1, float xi2, Point3f& position, Vec3f& normal, float& pdf) const override;
 
     float getArea();
-    void transform(const Mat4f& M) override
-    {
-        auto v0h = PointTo4D(v0);
-        auto v1h = PointTo4D(v1);
-        auto v2h = PointTo4D(v2);
-        v0 = Point4DTo3D(M * v0h);
-        v1 = Point4DTo3D(M * v1h);
-        v2 = Point4DTo3D(M * v2h);
-        Vector3f pmin = v0.cwiseMin(v1).cwiseMin(v2);
-        Vector3f pmax = v0.cwiseMax(v1).cwiseMax(v2);
-        bound = Bound(pmin, pmax); 
-        
-    }
+    void transform(const Mat4f& M) override;
+
 };

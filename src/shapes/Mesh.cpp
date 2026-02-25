@@ -1,6 +1,6 @@
 #include"stat_render/shapes/Mesh.h"
 
-Mesh::Mesh(const std::vector<Vector3f>& vertices, 
+Mesh::Mesh(const std::vector<Vec3f>& vertices, 
          const std::vector<uint32_t>& indices, 
          Material* m) 
 {
@@ -50,7 +50,7 @@ Mesh::~Mesh()
     }
 }
 
-void Mesh::sample(float xi1, float xi2, Point3f& position, Vector3f& normal, float& pdf) const
+void Mesh::sample(float xi1, float xi2, Point3f& position, Vec3f& normal, float& pdf) const
 {
     float sum_S = 0.0f;
     for(auto& tri: triangles)

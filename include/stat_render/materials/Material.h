@@ -22,11 +22,11 @@ public:
 
 
     // 根据出射方向 w_o 采样入射方向 w_i
-    virtual Vector3f sample(const Vector3f& wi, const Vector3f& n) = 0;      
+    virtual Vec3f sample(const Vec3f& wi, const Vec3f& n) = 0;      
     // 计算采样到 wi 的概率 
-    virtual float pdf(const Vector3f & wi, const Vector3f & wo, const Vector3f& n) = 0;
+    virtual float pdf(const Vec3f & wi, const Vec3f & wo, const Vec3f& n) = 0;
     // 计算 BSDF(p, wi, wo)
-    virtual Color3f eval(const Vector3f & wi, const Vector3f& wo, const Vector3f & n) = 0;
+    virtual Color3f eval(const Vec3f & wi, const Vec3f& wo, const Vec3f & n) = 0;
 
     
 };

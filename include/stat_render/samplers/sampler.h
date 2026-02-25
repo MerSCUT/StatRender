@@ -18,5 +18,5 @@ public:
     
     // 均匀采样
     float get1D() { return dist(rng); }
-    Vector2f get2D() { return Vector2f(dist(rng), dist(rng)); }
+    Vec2f get2D() { return Vec2f(dist(rng), dist(rng)); }
 };

@@ -13,7 +13,7 @@ private:
 public:
     Mesh(std::vector<Object*> triangles_) : triangles(triangles_) {}
 
-    Mesh(const std::vector<Vector3f>& vertices, 
+    Mesh(const std::vector<Vec3f>& vertices, 
          const std::vector<uint32_t>& indices, 
          Material* m);
 
@@ -29,7 +29,7 @@ public:
     inline Point3f getCenter() const override { return getBound().Center(); }
     ~Mesh();
 
-    void sample(float xi1, float xi2, Point3f& position, Vector3f& normal, float& pdf) const override;
+    void sample(float xi1, float xi2, Point3f& position, Vec3f& normal, float& pdf) const override;
     
     void transform(const Mat4f & Matrix) override
     {

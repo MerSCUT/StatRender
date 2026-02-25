@@ -3,9 +3,9 @@
 bool Sphere::hit(const Ray& ray)
 {
     // Test only
-    auto a = Dot(ray.direct, ray.direct);
-    auto b = 2 * Dot(ray.direct, ray.origin-center);
-    auto c = Dot(ray.origin-center, ray.origin-center) - radius *radius;
+    auto a = dot(ray.direct, ray.direct);
+    auto b = 2 * dot(ray.direct, ray.origin-center);
+    auto c = dot(ray.origin-center, ray.origin-center) - radius *radius;
     // Discriminant
     auto Delta = b * b - 4 * a * c;
     if (Delta < 0) return false;
@@ -22,9 +22,9 @@ Hit Sphere::intersect(const Ray& ray)
     // Test with Hit
     Hit payload;
 
-    auto a = Dot(ray.direct, ray.direct);
-    auto b = 2 * Dot(ray.direct, ray.origin-center);
-    auto c = Dot(ray.origin-center, ray.origin-center) - radius *radius;
+    auto a = dot(ray.direct, ray.direct);
+    auto b = 2 * dot(ray.direct, ray.origin-center);
+    auto c = dot(ray.origin-center, ray.origin-center) - radius *radius;
 
     // Discriminant
     auto Delta = b * b - 4 * a * c;

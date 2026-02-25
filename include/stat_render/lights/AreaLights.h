@@ -23,7 +23,7 @@ public:
 
         obj->sample(u1, u2, ls.position, ls.normal, ls.pdf);
         ls.radiance = radiance;
-
+        ls.obj = obj;
         return ls;
     }
 

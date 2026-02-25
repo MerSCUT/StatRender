@@ -1,6 +1,34 @@
 #include"stat_render/materials/Diffuse.h"
 #include<random>
-Vector3f Diffuse::sample(const Vector3f& wi, const Vector3f& n)
+
+Diffuse::Diffuse(DiffuseColor dc)
+{
+    switch (dc)
+    {
+    case DiffuseColor::BLUE :
+    {
+        albedo = Color3f(0.14, 0.14, 0.45);
+        break;
+    }
+    case DiffuseColor::GREEN :
+    {
+        albedo = Color3f(0.14, 0.45, 0.091);
+        break;
+    }
+    case DiffuseColor::WHITE :
+    {
+        albedo = Color3f(0.725, 0.71, 0.68);
+        break;
+    }
+    case DiffuseColor::RED :
+    {
+        albedo = Color3f(0.63, 0.065, 0.05);
+        break;
+    }
+    }
+}
+
+Vec3f Diffuse::sample(const Vec3f& wi, const Vec3f& n)
 {
     // 均匀采样单位半球
     // 局部坐标系中先采样, 再变换到实际采样点.
@@ -17,31 +45,31 @@ Vector3f Diffuse::sample(const Vector3f& wi, const Vector3f& n)
     float y = sin_theta * std::sin(phi);
     float z = std::cos(theta); // 即 u1
 
-    Vector3f t;
-    if (std::abs(n.x()) > std::abs(n.y())) {
-        float invLen = 1.0f / std::sqrt(n.x() * n.x() + n.z() * n.z());
-        t = Vector3f(n.z() * invLen, 0.0f, -n.x() * invLen);
+    Vec3f t;
+    if (std::abs(n.x) > std::abs(n.y)) {
+        float invLen = 1.0f / std::sqrt(n.x * n.x + n.z * n.z);
+        t = Vec3f(n.z * invLen, 0.0f, -n.x * invLen);
     } else {
-        float invLen = 1.0f / std::sqrt(n.y() * n.y() + n.z() * n.z());
-        t = Vector3f(0.0f, n.z() * invLen, -n.y() * invLen);
+        float invLen = 1.0f / std::sqrt(n.y * n.y + n.z * n.z);
+        t = Vec3f(0.0f, n.z * invLen, -n.y * invLen);
     }
     // 通过叉乘得到副切向量 b
-    Vector3f b = n.cross(t);
+    Vec3f b = cross(n, t);
 
     return x * t + y * b + z * n;
 }
 
-float Diffuse::pdf(const Vector3f & wi, const Vector3f & wo, const Vector3f& n)
+float Diffuse::pdf(const Vec3f & wi, const Vec3f & wo, const Vec3f& n)
 {
     // 给定 wo, n, 采样到 wi 的概率.
     return 0.5f * inv_Pi;
 }
     
-Color3f Diffuse::eval(const Vector3f & wi, const Vector3f& wo, const Vector3f & n)
+Color3f Diffuse::eval(const Vec3f & wi, const Vec3f& wo, const Vec3f & n)
 {
     // BRDF 常数.
     // 确保 wo, wi 方向朝外
-    if (Dot(n, wi) > 0.0f && Dot(n, wo) > 0.0f)
+    if (dot(n, wi) > 0.0f && dot(n, wo) > 0.0f)
     {
         return albedo * inv_Pi;
     }

@@ -25,7 +25,7 @@ Mesh* Parser::loadOBJ(const std::string& filename, std::shared_ptr<Material> mat
         return nullptr;
     }
 
-    std::vector<Vector3f> vertices;
+    std::vector<Vec3f> vertices;
     std::vector<uint32_t> indices;
     std::string line;
 
@@ -88,10 +88,10 @@ Mesh* Parser::loadOBJ(const std::string& filename, std::shared_ptr<Material> mat
     //         float scale = 2.0f / max_extent;
 
     //         for (auto& v : vertices) {
-    //             // 假设 Vector3f 可以直接访问 .x, .y, .z
-    //             v.x() = (v.x() - center_x) * scale;
-    //             v.y() = (v.y() - center_y) * scale;
-    //             v.z() = (v.z() - center_z) * scale;
+    //             // 假设 Vec3f 可以直接访问 .x, .y, .z
+    //             v.x = (v.x - center_x) * scale;
+    //             v.y = (v.y - center_y) * scale;
+    //             v.z = (v.z - center_z) * scale;
     //         }
     //         std::cout << "Normalized mesh to [-1, 1]^3 with scale factor: " << scale << std::endl;
     //     }
