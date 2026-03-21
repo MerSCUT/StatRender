@@ -67,6 +67,7 @@ void Mesh::sample(float xi1, float xi2, Point3f& position, Vec3f& normal, float&
         {
             tri->sample(xi1, xi2, position, normal, pdf);
             pdf = 1.0f / sum_S;
+            break;
         }
     }
     return;

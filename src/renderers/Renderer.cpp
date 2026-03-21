@@ -5,7 +5,7 @@
 #include<mutex>
 #include<atomic>
 const int tile_size = 32;        // Tile size
-
+const int SPP = 32;              // samples number per pixel
 void Renderer::RenderMultiThreading(const Scene& scene, Film& film, const Camera& camera)
 {
     float dis = 1.0f;
@@ -14,12 +14,13 @@ void Renderer::RenderMultiThreading(const Scene& scene, Film& film, const Camera
     float l = -r;
     float b = -t;
 
-    int spp = SPP;      // from common.h
-    int progress = 0;
+    int spp = SPP;                                  
     int w = film.getWidth();
     int h = film.getHeight();
     int total = w * h;
-    
+    std::cout<< "[Info] Tile size : " << tile_size << std::endl;
+    std::cout << "[Info] SPP : " << SPP << std::endl;
+    std::cout << "[Info] Resolution : " << resolution << " * " << resolution << std::endl; 
 
     struct Tile{ 
         int row_st, col_st, row_ed, col_ed;         // [st, ed)
@@ -99,6 +100,8 @@ void Renderer::RenderMultiThreading(const Scene& scene, Film& film, const Camera
                   << " (" << percent << "%)    " << std::flush;
         std::this_thread::sleep_for(std::chrono::milliseconds(100)); // 0.1s interval
     }
+    std::cout << "\r进度: " << total << " / " << total 
+                  << " (" << 100.00 << "%)    " << std::endl;
     for(int i = 0; i < numThreads; i++)
     {
         threads[i].join();
@@ -117,6 +120,10 @@ void Renderer::RenderPipeline(const Scene& scene, Film& film, const Camera& came
 
     int spp = SPP;          // from common.h
     int progress = 0;
+
+    std::cout << "[Info] SPP : " << SPP << std::endl;
+    std::cout << "[Info] Resolution : " << resolution << " * " << resolution << std::endl; 
+
     for(int j = 0; j < film.getHeight(); j++)
     {
         for(int i = 0; i < film.getWidth(); i++)
@@ -146,9 +153,11 @@ void Renderer::RenderPipeline(const Scene& scene, Film& film, const Camera& came
     std::cout << std::endl;
 }
 
+
+
 Color3f Renderer::CastRay(const Ray& ray, const Scene& scene, int depth)
 {
-    if (depth > 5) return Color3f(0.f, 0.f, 0.f);
+    if (depth > 25) return Color3f(0.f, 0.f, 0.f);
     if (Hit payload = scene.intersect(ray);  
     payload.intersected)
     {
@@ -183,16 +192,17 @@ Color3f Renderer::CastRay(const Ray& ray, const Scene& scene, int depth)
             auto hit_test = scene.intersect(test);
             // if ((test(hit_test.tmin) - payload.position).norm() > (ls.position - payload.position).norm())
             
-            if ((test(hit_test.tmin) - p).norm() + Epsilon >= (l-p).norm()) 
+            if (!hit_test.intersected || (test(hit_test.tmin) - p).norm() + Epsilon >= (l-p).norm()) 
             {
                 
-                Vec3f wo = payload.incident.normalized();
+                Vec3f wo = payload.incident.normalized();       // outwards
                 
-
                 // 根据 payload.material 计算 L_o
                 // L_o = fr * L_i * dot(n, wi) * dot(-n_l, wi) / dot(p-l, p-l) / ls.pdf_A
                 auto fr = payload.material->eval(wi, wo, n_p);
                 auto Li = ls.radiance;
+
+                
                 auto cos_thetai = dot(n_p, wi);
                 cos_thetai = cos_thetai > 0.0f ? cos_thetai : 0.0f;
                 auto cos_thetaip = std::abs(dot(n_l, wi));
@@ -202,6 +212,7 @@ Color3f Renderer::CastRay(const Ray& ray, const Scene& scene, int depth)
                 auto dis = dot(p-l, p-l);
                 //assert(cos_thetai >= 0.0f);
                 //assert(cos_thetaip >= 0.0f);
+                assert(ls.pdf > 0.0f && "光源采样信息错误");
                 L_dir = fr * Li * cos_thetai * cos_thetaip / (dis * ls.pdf) ;
                 int kkk;
             }

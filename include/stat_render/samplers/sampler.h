@@ -20,3 +20,4 @@ public:
     float get1D() { return dist(rng); }
     Vec2f get2D() { return Vec2f(dist(rng), dist(rng)); }
 };
+

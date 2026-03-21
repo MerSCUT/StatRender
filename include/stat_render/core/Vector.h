@@ -20,8 +20,9 @@ public:
     inline Vec3f& operator*=(const Vec3f& v) { x*=v.x; y*=v.y; z*=v.z; return *this; }
     inline Vec3f& operator*=(const float t)  { x*=t; y*=t; z*=t; return *this; }
     inline Vec3f& operator/=(const float t)  { 
+        
         assert(t != 0.0f && "Division by zero in Vec3f"); 
-        float inv = 1.0f / t; 
+        float inv = 1.0f / t;
         x*=inv; y*=inv; z*=inv; 
         return *this; 
     }

@@ -39,7 +39,9 @@ void Scene::loadOBJ(const std::string& path,  Bound& boundbox, const Color3f& em
     std::shared_ptr<Material> m;
     if (emission == Color3f(0.f))
     {
-        m = std::make_shared<Diffuse>(dc);
+        m = std::make_shared<Diffuse>(dc
+            // , SamplingStrategy::Uniform
+        );
     }
     else
     {

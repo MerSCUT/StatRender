@@ -1,7 +1,8 @@
 #include"stat_render/materials/Diffuse.h"
 #include<random>
 
-Diffuse::Diffuse(DiffuseColor dc)
+Diffuse::Diffuse(DiffuseColor dc, SamplingStrategy _strategy):
+strategy(_strategy)
 {
     switch (dc)
     {
@@ -30,21 +31,37 @@ Diffuse::Diffuse(DiffuseColor dc)
 
 Vec3f Diffuse::sample(const Vec3f& wi, const Vec3f& n)
 {
-    // 均匀采样单位半球
-    // 局部坐标系中先采样, 再变换到实际采样点.
     
     Sampler sampler;
     float u1 = sampler.get1D();
     float u2 = sampler.get1D();
-    float theta = std::acos(u1);
-    float phi = 2.0f * Pi * u2;
+    // 计算局部坐标系中的方向
+    float x,y,z;
+    switch (strategy)
+    {
+    case SamplingStrategy::Uniform :
+    {
+        // 均匀采样
+        float phi = 2.0f * Pi * u2;
+        float sin_theta = std::sqrt(1- u1 * u1);
 
-
-    float sin_theta = std::sin(theta);
-    float x = sin_theta * std::cos(phi);
-    float y = sin_theta * std::sin(phi);
-    float z = std::cos(theta); // 即 u1
-
+        x = sin_theta * std::cos(phi);
+        y = sin_theta * std::sin(phi);
+        z = u1;
+        break;
+    }
+    case SamplingStrategy::CosineWeighted :
+    {
+        // 余弦加权采样
+        float sin_theta = std::sqrt(u1);
+        float phi = 2.0f * Pi * u2;
+        x = sin_theta * std::cos(phi);
+        y = sin_theta * std::sin(phi);
+        z = std::sqrt(1.0f - u1);
+        break;
+    }
+    }
+    // 根据 n 转换到世界坐标系
     Vec3f t;
     if (std::abs(n.x) > std::abs(n.y)) {
         float invLen = 1.0f / std::sqrt(n.x * n.x + n.z * n.z);
@@ -53,16 +70,31 @@ Vec3f Diffuse::sample(const Vec3f& wi, const Vec3f& n)
         float invLen = 1.0f / std::sqrt(n.y * n.y + n.z * n.z);
         t = Vec3f(0.0f, n.z * invLen, -n.y * invLen);
     }
-    // 通过叉乘得到副切向量 b
     Vec3f b = cross(n, t);
 
     return x * t + y * b + z * n;
 }
 
+
 float Diffuse::pdf(const Vec3f & wi, const Vec3f & wo, const Vec3f& n)
 {
     // 给定 wo, n, 采样到 wi 的概率.
-    return 0.5f * inv_Pi;
+    switch (strategy)
+    {
+    case SamplingStrategy::Uniform :
+    {
+        return 0.5f * inv_Pi;
+        break;
+    }
+    case SamplingStrategy::CosineWeighted :
+    {
+        // 余弦加权采样
+        // p(wi) = cos(theta_i) / Pi
+        return wi.dot(n) * inv_Pi;
+        break;
+    }
+    }
+    return wi.dot(n) * inv_Pi;      // CosineWeighted by default;
 }
     
 Color3f Diffuse::eval(const Vec3f & wi, const Vec3f& wo, const Vec3f & n)
@@ -73,5 +105,5 @@ Color3f Diffuse::eval(const Vec3f & wi, const Vec3f& wo, const Vec3f & n)
     {
         return albedo * inv_Pi;
     }
-    return Color3f(0.0f, 0.0f, 0.0f);
+    return Color3f(0.0f);
 }
