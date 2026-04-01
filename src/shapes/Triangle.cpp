@@ -50,6 +50,7 @@ Hit Triangle::intersect(const Ray& ray)
     payload.intersected = true;
     payload.tmin = t;
     payload.position = ray(t);
+    payload.dist_square = (ray.origin - payload.position).norm2();
     payload.incident = -ray.direct;
     payload.material = material;
     payload.obj = this;

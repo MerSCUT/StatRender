@@ -16,6 +16,8 @@ public:
     Color3f getRadiance() const { return radiance; }
 
     Object* getObject() const override { return obj; }
+
+    
     
     LightSample sampleLight(float u1, float u2) const override
     {

@@ -21,7 +21,7 @@ public:
 
     Color3f getEmission() const override { return emission; }
 
-    Vec3f sample(const Vec3f& wi, const Vec3f& n) override { return Vec3f(0.f, 0.f, 0.f); };
+    Vec3f sample(const Vec3f& wi, const Vec3f& n, SobolSampler& sampler) override { return Vec3f(0.f, 0.f, 0.f); };
 
     float pdf(const Vec3f & wi, const Vec3f & wo, const Vec3f& n) override { return 0.0f; }
     

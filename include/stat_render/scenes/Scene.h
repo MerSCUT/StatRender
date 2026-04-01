@@ -7,6 +7,7 @@
 #include"stat_render/scenes/parser.h"
 #include<iostream>
 #include<memory>
+#include"stat_render/samplers/QMC.h"
 class Scene
 {
 private:
@@ -35,6 +36,8 @@ public:
     
     Hit intersect(const Ray& ray) const;
     // 在 light 列表里采样
-    LightSample sampleLight() const;
-    
+    LightSample sampleLight(SobolSampler& sampler) const;
+    float getLightpdf(Object* obj) const {
+        return 1.0f / obj->SurfaceArea();
+    }
 };

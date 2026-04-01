@@ -58,15 +58,15 @@ void Scene::loadOBJ(const std::string& path,  Bound& boundbox, const Color3f& em
     return;
 }
 
-LightSample Scene::sampleLight() const
+LightSample Scene::sampleLight(SobolSampler& sampler) const
 {
     LightSample ls;
     // 假设场景中只有一个光源
     assert(lights.size() == 1);
     auto l = lights[0];
-    Sampler sampler;
     Vec2f u = sampler.get2D();
     ls = l->sampleLight(u.x, u.y);
+    ls.pdf = std::max(ls.pdf, 1e-5f);
     return ls;
     
     // ... 多个光源 :

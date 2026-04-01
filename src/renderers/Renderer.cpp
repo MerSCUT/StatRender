@@ -4,8 +4,16 @@
 #include<thread>
 #include<mutex>
 #include<atomic>
+#include<stat_render/samplers/QMC.h>
 const int tile_size = 32;        // Tile size
 const int SPP = 32;              // samples number per pixel
+
+float PowerHeuristic(float f_pdf, float g_pdf) {
+    float f2 = f_pdf * f_pdf;
+    float g2 = g_pdf * g_pdf;
+    return f2 / (f2 + g2);
+}
+
 void Renderer::RenderMultiThreading(const Scene& scene, Film& film, const Camera& camera)
 {
     float dis = 1.0f;
@@ -71,7 +79,8 @@ void Renderer::RenderMultiThreading(const Scene& scene, Film& film, const Camera
                     Color3f result(0.f);
                     for(int s = 0; s < spp; s++)
                     {
-                        Color3f res = CastRay(ray, scene, 0)/spp;
+                        SobolSampler sampler(s + 1, i, j);
+                        Color3f res = CastRay(ray, scene, 0, sampler)/spp;
                         result += res;
                     }
                     film.add(i,j, result);
@@ -140,7 +149,8 @@ void Renderer::RenderPipeline(const Scene& scene, Film& film, const Camera& came
 
             for(int s = 0; s < spp; s++)
             {
-                auto res = CastRay(ray, scene, 0);
+                SobolSampler sampler(s + 1, i, j);
+                auto res = CastRay(ray, scene, 0, sampler);
                 
                 film.add(i,j, res/(float)spp);
             }
@@ -155,7 +165,7 @@ void Renderer::RenderPipeline(const Scene& scene, Film& film, const Camera& came
 
 
 
-Color3f Renderer::CastRay(const Ray& ray, const Scene& scene, int depth)
+Color3f Renderer::CastRay(const Ray& ray, const Scene& scene, int depth, SobolSampler& sampler, bool is_bounced_ray, float prev_brdf_pdf)
 {
     if (depth > 25) return Color3f(0.f, 0.f, 0.f);
     if (Hit payload = scene.intersect(ray);  
@@ -180,7 +190,7 @@ Color3f Renderer::CastRay(const Ray& ray, const Scene& scene, int depth)
             // 非光源
             // 1. 直接光照
             Color3f L_dir(0.0f, 0.0f, 0.0f);
-            LightSample ls = scene.sampleLight();
+            LightSample ls = scene.sampleLight(sampler);
             auto p = payload.position;
             auto l = ls.position;
             Vec3f wi = (l - p).normalized();    // outwards
@@ -212,20 +222,30 @@ Color3f Renderer::CastRay(const Ray& ray, const Scene& scene, int depth)
                 auto dis = dot(p-l, p-l);
                 //assert(cos_thetai >= 0.0f);
                 //assert(cos_thetaip >= 0.0f);
-                assert(ls.pdf > 0.0f && "光源采样信息错误");
-                L_dir = fr * Li * cos_thetai * cos_thetaip / (dis * ls.pdf) ;
-                int kkk;
+                if (ls.pdf <= 0.0f){
+                    std::cout << "发现 ls.pdf 异常值 : " << ls.pdf << std:: endl;
+                    assert(ls.pdf > 0.0f && "光源采样信息错误");
+                }
+                
+
+                float light_pdf_sa = ls.pdf * dis / cos_thetaip;
+                // 询问材质：如果你用 BRDF 去采样这个 wi，概率密度是多少？
+                float brdf_pdf_dir = payload.material->pdf(wi, wo, n_p);
+                // 计算光源策略的 MIS 权重
+                float weight_light = PowerHeuristic(light_pdf_sa, brdf_pdf_dir);
+
+                L_dir = weight_light * fr *  Li * cos_thetai * cos_thetaip / (dis * ls.pdf) ;
             }
 
             Color3f L_indir(0.f, 0.f, 0.f);
             // Russian Roulette
+            
             float p_rr = 0.8f;
-            Sampler sampler;
             auto u = sampler.get1D(); 
             if (u >= p_rr) return L_dir;
             Vec3f wo = (ray.origin - p).normalized();
             // 采样入射方向 wi (局部)
-            Vec3f wi_ind = payload.material->sample(wo, n_p).normalized();
+            Vec3f wi_ind = payload.material->sample(wo, n_p, sampler).normalized();
             float pdf_ind = payload.material->pdf(wi_ind, wo, n_p);
             pdf_ind = std::max(pdf_ind, 1e-3f);
 
@@ -233,7 +253,10 @@ Color3f Renderer::CastRay(const Ray& ray, const Scene& scene, int depth)
             
             auto fr = payload.material->eval(wi_ind, wo, n_p);
             auto costhetai = dot(n_p, wi_ind);
-            auto Li = CastRay(ray_ind, scene, depth+1);
+
+            
+
+            auto Li = CastRay(ray_ind, scene, depth+1, sampler, true, pdf_ind);
             L_indir = fr * Li * costhetai / (pdf_ind * p_rr);
             
             
@@ -265,3 +288,4 @@ Color3f Renderer::CastRay(const Ray& ray, const Scene& scene, int depth)
     return Color3f(0.f, 0.f, 0.f);
     return Color3f(199.f/255.f,233.f/255.f,233.f/255.f);
 }
+

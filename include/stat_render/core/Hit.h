@@ -13,6 +13,7 @@ struct Hit
     Vec3f normal;
     Material* material;
     float tmin;
+    float dist_square;
     Object* obj;
 
     Hit() : 

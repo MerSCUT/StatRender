@@ -29,10 +29,10 @@ strategy(_strategy)
     }
 }
 
-Vec3f Diffuse::sample(const Vec3f& wi, const Vec3f& n)
+Vec3f Diffuse::sample(const Vec3f& wi, const Vec3f& n, SobolSampler& sampler)
 {
     
-    Sampler sampler;
+    //Sampler sampler;
     float u1 = sampler.get1D();
     float u2 = sampler.get1D();
     // 计算局部坐标系中的方向

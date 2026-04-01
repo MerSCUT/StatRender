@@ -58,6 +58,7 @@ void Mesh::sample(float xi1, float xi2, Point3f& position, Vec3f& normal, float&
         sum_S += tri->SurfaceArea();
     }
     Sampler sampler; 
+    // 次选方案 : 不动架构, 用流式随机数生成.
     float u = sampler.get1D();
     float sum = 0.0f;
     for(auto& tri: triangles)

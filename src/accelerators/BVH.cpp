@@ -115,21 +115,18 @@ namespace {
         Hit templ = intersectBVH(ray, node->left);
         Hit tempr = intersectBVH(ray, node->right);
         
-        // 保守判断
-        // 1. 如果两边都击中了，返回距离近的那个
+        // 1. 两边都击中了，返回距离近的
         if (templ.intersected && tempr.intersected) {
             return (templ.tmin < tempr.tmin) ? templ : tempr;
         }
-        // 2. 如果只有左边击中，直接返回左边 (无需比较 tmin)
+        // 2. 只有左边击中，直接返回左边
         else if (templ.intersected) {
             return templ;
         }
-        // 3. 如果只有右边击中，直接返回右边 (无需比较 tmin)
+        // 3. 只有右边击中，直接返回右边
         else if (tempr.intersected) {
             return tempr;
         }
-        
-        // 4. 都没击中，才返回默认的 Miss 状态
         return payload;
     }
 }

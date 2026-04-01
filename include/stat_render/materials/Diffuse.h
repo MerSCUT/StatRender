@@ -15,7 +15,7 @@ public:
     Diffuse(DiffuseColor dc, SamplingStrategy _strategy = SamplingStrategy::CosineWeighted);
     
 
-    Vec3f sample(const Vec3f& wi, const Vec3f& n) override;
+    Vec3f sample(const Vec3f& wi, const Vec3f& n, SobolSampler& smapler) override;
     
     float pdf(const Vec3f & wi, const Vec3f & wo, const Vec3f& n) override;
     

@@ -171,7 +171,7 @@ void test_trace()
     paths.push_back("../asset/cornellbox/shortbox.obj");
     paths.push_back("../asset/cornellbox/tallbox.obj");
     std::vector<Color3f> emissions(paths.size(), Color3f(0.f,0.f,0.f));
-    emissions[2] = Color3f(10.f, 8.5f, 3.0f);
+    emissions[2] = Color3f(10.f, 8.5f, 3.0f) ;
     std::vector<DiffuseColor> dcs {
         DiffuseColor::WHITE,
         DiffuseColor::RED,
@@ -207,14 +207,15 @@ void test_trace()
     std::cout << "[Info] 开始执行渲染管线..." << std::endl;
     auto start_render = std::chrono::high_resolution_clock::now();
     //====================================================
+    //r.RenderPipeline(scene, film, camera);
     r.RenderMultiThreading(scene, film, camera);
     //====================================================
     auto end_render = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> render_time = end_render - start_render;
     std::cout << "[Timer] 渲染耗时: " << render_time.count() << " 秒\n" << std::endl;
 
-    film.Write("../images/test_trace.ppm");
-    std::cout << "[Info] 图片输出 : images/test_trace.ppm" << std::endl;
+    film.Write("../images/test_sobol.ppm");
+    std::cout << "[Info] 图片输出 : images/test_sobol.ppm" << std::endl;
     return;
 }
 int main()

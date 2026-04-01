@@ -2,6 +2,7 @@
 
 #include"stat_render/core/common.h"
 #include"stat_render/samplers/sampler.h" 
+#include"stat_render/samplers/QMC.h"
 enum class MaterialType { Diffuse, Specular, Microfacet, Emissive };
 
 class Material{
@@ -22,7 +23,7 @@ public:
 
 
     // 根据出射方向 w_o 采样入射方向 w_i
-    virtual Vec3f sample(const Vec3f& wi, const Vec3f& n) = 0;      
+    virtual Vec3f sample(const Vec3f& wi, const Vec3f& n, SobolSampler& sampler) = 0;      
     // 计算采样到 wi 的概率 
     virtual float pdf(const Vec3f & wi, const Vec3f & wo, const Vec3f& n) = 0;
     // 计算 BSDF(p, wi, wo)
